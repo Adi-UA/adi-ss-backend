@@ -6,9 +6,10 @@ import torch
 import RRDBNet_arch as arch
 
 MODEL_PATH = "./models/RRDB_ESRGAN_x4.pth"  # models/RRDB_ESRGAN_x4.pth
-DEVICE = torch.device("cpu")
+DEVICE = torch.device("cpu")  # CUDA needs testing on Vercel
 
 
+# load the model
 def load_model():
     model = arch.RRDBNet(3, 3, 64, 23, gc=32)
     model.load_state_dict(torch.load(MODEL_PATH), strict=True)
@@ -17,6 +18,7 @@ def load_model():
     return model
 
 
+# Convert image bytes to format necessary for this model
 def img_to_tensor(img_bytes):
     nparr = np.frombuffer(img_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
@@ -27,6 +29,7 @@ def img_to_tensor(img_bytes):
     return img_LR
 
 
+# Scale the image tensor and return in RGB format as a float NDarray ( after scaling by 255)
 def scale(img_LR: torch.Tensor, model):
     with torch.no_grad():
         output = model(img_LR).data.squeeze().float().cpu().clamp_(0, 1).numpy()

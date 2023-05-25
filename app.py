@@ -18,16 +18,19 @@ MODEL = load_model()
 @app.route("/upscale", methods=["POST"])
 def upscale():
     img_file = request.files.get("img")
+
+    # Check that a file was given
     if img_file is None or img_file.filename == "":
         return jsonify({"error": "No file was provided."})
     if not allowed(img_file.filename):
         return jsonify({"error": "Only image files are allowed"})
 
+    # Read and upscale the image with the model
     img_bytes = img_file.read()
     img_LR = img_to_tensor(img_bytes)
-
     output = scale(img_LR, MODEL)
 
+    # Return the upscaled image as raw bytes
     result_img = Image.fromarray(output.astype("uint8"))
     rawBytes = io.BytesIO()
     result_img.save(rawBytes, "PNG")
